@@ -59,9 +59,7 @@ str ls_item(Lstr self){
 
 void ls_inicio(Lstr self){
     self->corrente = NULL;
-    printf("corrente = null\n");
     self->pos = -1;
-    printf("pos = -1\n");
 }
 
 void ls_fim(Lstr self){
@@ -103,10 +101,7 @@ void ls_posiciona(Lstr self, int pos){
 bool ls_avanca(Lstr self){
     if(self->pos == self->tam) return 0;
     self->pos += 1;
-    s_imprime(self->corrente->string);
-    printf("chegou no pos +1\n");
-    self->corrente = (self->corrente->prox != NULL)?self->corrente->prox:NULL;
-    printf("chegou no self->corrente\n");
+    self->corrente = (self->corrente != NULL)?self->corrente->prox:self->primeiro;
     return (self->corrente == NULL)?0:1;
 }
 
@@ -117,60 +112,105 @@ bool ls_recua(Lstr self){
     return (self->corrente == NULL)?0:1;
 }
 
+static no* cria_no(no* ant, no* prox, str cad){
+    no* new = malloc(sizeof(no));
+    new->ant = ant;
+    new->prox = prox;
+    new->string = s_copia(cad);
+    return new;
+}
+
+static void insere_lista_vazia(Lstr self, str cad){
+    no* novo = cria_no(NULL,NULL,cad);
+    self->primeiro = novo;
+    self->ultimo = novo;
+    ls_avanca(self);
+    self->pos = 0;
+    self->tam += 1;
+}
+
+static void insere_inicio(Lstr self, str cad){
+    no* novo = cria_no(NULL,self->primeiro,cad);
+    self->primeiro->ant = novo;
+    self->primeiro = novo;
+    self->corrente = novo;
+    self->pos = 0;
+    self->tam += 1;
+}
+
+static void insere_final(Lstr self, str cad){
+    no* novo = cria_no(self->ultimo,NULL,cad);
+    self->ultimo->prox = novo;
+    self->ultimo = novo;
+    self->corrente = novo;
+    self->pos = self->tam;
+    self->tam += 1;
+}
+
+static void desloca_lista_inserir(Lstr self, no* new, no* anterior, no* proximo){
+    anterior->prox = new;
+    proximo->ant = new;
+}
+
 void ls_insere_antes(Lstr self, str cad){
     if(ls_vazia(self)){
-        printf("Chegou no lista vazia\n");
-        no* novo = malloc(sizeof(no));
-        printf("Chegou no malloc\n");
-        novo->ant = NULL;
-        printf("Chegou no ant\n");
-        novo->prox = NULL;
-        printf("Chegou no prox\n");
-        novo->string = s_copia(cad);
-        printf("Chegou no string\n");
-        self->primeiro = novo;
-        printf("Chegou no primeiro\n");
-        self->ultimo = novo;
-        printf("Chegou no ultimo\n");
-        self->pos = 0;
-        printf("Chegou no pos\n");
-        self->tam += 1;
-        printf("Chegou no tam\n");
+        insere_lista_vazia(self,cad);
         return;
     }
-    printf("Passou do lista vazia no insere\n");
-    no* proximo;
-    no* anterior;
     if(self->pos <= 0){
-        proximo = self->primeiro;
-        anterior = NULL;
-    }else{
-        proximo = self->corrente;
-        anterior = self->corrente->ant;
+        insere_inicio(self,cad);
+        return;
     }
+    if(self->pos == self->tam){
+        insere_final(self,cad);
+        return;
+    }
+    no* proximo = self->corrente;
+    no* anterior = self->corrente->ant;
     no* novo = malloc(sizeof(no));
     novo->ant = anterior;
     novo->prox = proximo;
     novo->string = s_copia(cad);
-    // apagar o cad? acho que nao?
-    if(self->pos <= 0){
-        self->primeiro->ant = novo;
-        self->primeiro = novo;
-        self->pos = 0;
-    }else{
-        self->corrente->ant->prox = novo;
-        proximo->ant = novo;
-        ls_avanca(self);
-    }
+    desloca_lista_inserir(self,novo,anterior,proximo);
+    self->corrente = novo;
     self->tam += 1;
 }
 
 void ls_insere_depois(Lstr self, str cad){
-
+    if(ls_vazia(self)){
+        insere_lista_vazia(self,cad);
+        return;
+    }
+    if(self->pos < 0){
+        insere_inicio(self,cad);
+        return;
+    }
+    if(self->pos >= self->tam-1){
+        insere_final(self,cad);
+        return;
+    }
+    no* proximo = self->corrente->prox;
+    no* anterior = self->corrente;
+    no* novo = malloc(sizeof(no));
+    novo->ant = anterior;
+    novo->prox = proximo;
+    novo->string = s_copia(cad);
+    desloca_lista_inserir(self,novo,anterior,proximo);
+    self->corrente = novo;
+    self->tam += 1;
 }
 
 str ls_remove(Lstr self){
-
+    assert(!ls_item_valido(self) && !ls_vazia(self));
+    str strRemovida = s_copia(self->corrente->string);
+    no* remover = self->corrente;
+    if(remover != self->primeiro) remover->ant->prox = self->corrente->prox;
+    if(remover != self->ultimo) remover->prox->ant = self->corrente->ant;
+    self->tam -= 1;
+    s_destroi(remover->string);
+    free(remover);
+    self->corrente = remover->prox;
+    return strRemovida;
 }
 
 Lstr ls_sublista(Lstr self, int tam){
@@ -184,17 +224,18 @@ str ls_junta(Lstr self, str separador){
 void ls_imprime(Lstr self){
     if(self->tam == 0) return;
     for(ls_inicio(self);ls_avanca(self);){
-        printf("%d\n",self->pos);
         s_imprime(self->corrente->string);
+        printf("\n");
     }
 }
 
 int main(){
-    printf("Inicio da main\n");
     Lstr lista = ls_cria();
-    printf("Chegou no ls cria\n");
     ls_insere_antes(lista,s_("abacaxi"));
-    // ls_insere_antes(lista,s_("berinjela"));
-    // ls_insere_antes(lista,s_("cacto"));
+    ls_insere_antes(lista,s_("berinjela"));
+    ls_insere_depois(lista,s_("cacto"));
+    ls_fim(lista);
+    ls_recua(lista);
+    ls_remove(lista);
     ls_imprime(lista);
 }
