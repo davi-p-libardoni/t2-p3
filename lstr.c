@@ -87,11 +87,13 @@ void ls_posiciona(Lstr self, int pos){
     }
     int begin = (pos > (self->tam - pos))?1:0;
     if(begin == 0){
-        ls_inicio(self);
+        self->corrente = self->primeiro;
+        self->pos = 0;
         while(self->pos != pos)
             ls_avanca(self);
     }else{
-        ls_fim(self);
+        self->corrente = self->ultimo;
+        self->pos = self->tam-1;
         while(self->pos != pos)
             ls_recua(self);
     }
@@ -108,7 +110,7 @@ bool ls_avanca(Lstr self){
 bool ls_recua(Lstr self){
     if(self->pos == -1) return 0;
     self->pos -= 1;
-    self->corrente = (self->corrente->ant != NULL)?self->corrente->ant:NULL;
+    self->corrente = (self->corrente != NULL)?self->corrente->ant:self->ultimo;
     return (self->corrente == NULL)?0:1;
 }
 
@@ -167,10 +169,7 @@ void ls_insere_antes(Lstr self, str cad){
     }
     no* proximo = self->corrente;
     no* anterior = self->corrente->ant;
-    no* novo = malloc(sizeof(no));
-    novo->ant = anterior;
-    novo->prox = proximo;
-    novo->string = s_copia(cad);
+    no* novo = cria_no(anterior,proximo,cad);
     desloca_lista_inserir(self,novo,anterior,proximo);
     self->corrente = novo;
     self->tam += 1;
@@ -191,51 +190,85 @@ void ls_insere_depois(Lstr self, str cad){
     }
     no* proximo = self->corrente->prox;
     no* anterior = self->corrente;
-    no* novo = malloc(sizeof(no));
-    novo->ant = anterior;
-    novo->prox = proximo;
-    novo->string = s_copia(cad);
+    no* novo = cria_no(anterior,proximo,cad);
     desloca_lista_inserir(self,novo,anterior,proximo);
     self->corrente = novo;
     self->tam += 1;
 }
 
 str ls_remove(Lstr self){
-    assert(!ls_item_valido(self) && !ls_vazia(self));
+    assert(!ls_vazia(self) && ls_item_valido(self));
     str strRemovida = s_copia(self->corrente->string);
     no* remover = self->corrente;
     if(remover != self->primeiro) remover->ant->prox = self->corrente->prox;
     if(remover != self->ultimo) remover->prox->ant = self->corrente->ant;
     self->tam -= 1;
     s_destroi(remover->string);
-    free(remover);
     self->corrente = remover->prox;
+    if(self->primeiro == remover) self->primeiro = remover->prox;
+    if(self->ultimo == remover) self->ultimo = remover->ant;
+    free(remover);
     return strRemovida;
 }
 
 Lstr ls_sublista(Lstr self, int tam){
-
+    Lstr new = ls_cria();
+    if(tam < 0 || self->pos >= self->tam) return new;
+    printf("passou 1\n");
+    int fim = (self->tam > (self->pos + tam - 1))?self->pos + tam - 1:self->tam - 1;
+    printf("passou 2\n");
+    for(int i = self->pos;i <= fim;i++,ls_avanca(self))
+        ls_insere_depois(new,self->corrente->string);
+    return new;
 }
 
 str ls_junta(Lstr self, str separador){
-
+    if(self->tam == 0) return s_copia(s_(""));
+    if(self->tam == 1) return s_copia(self->primeiro->string);
+    str nova = s_copia(s_(""));
+    for(ls_inicio(self);ls_avanca(self);){
+        if(self->pos > 0) s_cat(&nova,separador);
+        s_cat(&nova,self->corrente->string);
+    }
+    return nova;
 }
 
 void ls_imprime(Lstr self){
-    if(self->tam == 0) return;
+    if(ls_vazia(self)) return;
     for(ls_inicio(self);ls_avanca(self);){
         s_imprime(self->corrente->string);
         printf("\n");
     }
 }
 
+static void ls_info(Lstr self){
+    printf("//   //\n");
+    if(ls_vazia(self)){
+        printf("Lista vazia.\n//   //\n");
+        return;
+    }
+    printf("Primeiro - \"");
+    s_imprime(self->primeiro->string);
+    printf("\"\nÚltimo - \"");
+    s_imprime(self->ultimo->string);
+
+    ls_inicio(self);
+    printf("\"\n-1 -> NULL\n");
+    for(ls_inicio(self);ls_avanca(self);){
+        printf("%d -> ",self->pos);
+        s_imprime(self->corrente->string);
+        printf("\n");
+    }
+    printf("%d -> NULL\n",self->tam);
+    printf("//   //\n\n");
+}
+
 int main(){
     Lstr lista = ls_cria();
     ls_insere_antes(lista,s_("abacaxi"));
-    ls_insere_antes(lista,s_("berinjela"));
+    ls_insere_depois(lista,s_("berinjela"));
     ls_insere_depois(lista,s_("cacto"));
-    ls_fim(lista);
-    ls_recua(lista);
-    ls_remove(lista);
-    ls_imprime(lista);
+    ls_insere_depois(lista,s_("dedão"));
+    str juncao = ls_junta(lista,s_(", "));
+    s_imprime(juncao);
 }
