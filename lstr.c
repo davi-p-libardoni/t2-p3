@@ -269,6 +269,10 @@ int main(){
     ls_insere_depois(lista,s_("berinjela"));
     ls_insere_depois(lista,s_("cacto"));
     ls_insere_depois(lista,s_("dedão"));
+    ls_insere_depois(lista,s_("dedão"));
+    ls_insere_depois(lista,s_("dedão"));
+    ls_insere_depois(lista,s_("dedão"));
+    ls_insere_depois(lista,s_("dedão"));
     str juncao = ls_junta(lista,s_(", "));
     s_imprime(juncao);
 }
