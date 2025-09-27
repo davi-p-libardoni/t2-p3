@@ -67,14 +67,6 @@ void ls_fim(Lstr self){
     self->pos = self->tam;
 }
 
-static void pos_depois_fim(Lstr self){
-    // no *antTemp;
-    // self->pos = self->tam;
-    // self->corrente = NULL;
-    // self->corrente->prox = NULL;
-        
-}
-
 void ls_posiciona(Lstr self, int pos){
     if(pos<0) pos += self->tam;
     if(pos<0){
