@@ -35,8 +35,11 @@ void ls_destroi(Lstr self){
         return;
     }
     ls_inicio(self);
-    while(self->corrente->prox != NULL)
-        ls_remove(self);
+    while(self->primeiro != NULL){
+        no* primeiro = self->primeiro;
+        self->primeiro = primeiro->prox;
+        free(primeiro);
+    }
     free(self);
 }
 
@@ -65,6 +68,14 @@ void ls_inicio(Lstr self){
 void ls_fim(Lstr self){
     self->corrente = NULL;
     self->pos = self->tam;
+}
+
+static void pos_depois_fim(Lstr self){
+    // no *antTemp;
+    // self->pos = self->tam;
+    // self->corrente = NULL;
+    // self->corrente->prox = NULL;
+        
 }
 
 void ls_posiciona(Lstr self, int pos){
@@ -253,4 +264,19 @@ static void ls_info(Lstr self){
     }
     printf("%d -> NULL\n",self->tam);
     printf("//   //\n\n");
+}
+
+int main(){
+    Lstr lista = ls_cria();
+    str a = s_("abacaxi");
+    str b = s_("berinjela");
+    ls_insere_antes(lista,a);
+    ls_insere_depois(lista,b);
+    ls_info(lista);
+    str juncao = ls_junta(lista,s_(", "));
+    s_imprime(juncao);
+    s_destroi(a);
+    s_destroi(b);
+    s_destroi(juncao);
+    ls_destroi(lista);
 }
