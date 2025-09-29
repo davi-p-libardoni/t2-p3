@@ -279,8 +279,21 @@ str s_sub(str cad, int pos, int tam)
 
 str s_apara(str cad, str sobras)
 {
-  // implementa este, pliz?
-  return cad;
+  s_ok(cad);
+  s_ok(sobras);
+  int ini = 0;
+  int fim = cad.tamc;
+  while (ini < fim) {
+    str ch = s_sub_sm(cad, ini, 1);
+    if (s_busca_s(sobras, 0, ch) == -1) break;
+    ini++;
+  }
+  while (fim > ini) {
+    str ch = s_sub_sm(cad, fim - 1, 1);
+    if (s_busca_s(sobras, 0, ch) == -1) break;
+    fim--;
+  }
+  return s_sub_sm(cad, ini, fim - ini);
 }
 
 // operações de busca {{{1
