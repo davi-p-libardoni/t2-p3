@@ -265,18 +265,3 @@ static void ls_info(Lstr self){
     printf("%d -> NULL\n",self->tam);
     printf("//   //\n\n");
 }
-
-int main(){
-    Lstr lista = ls_cria();
-    str a = s_("abacaxi");
-    str b = s_("berinjela");
-    ls_insere_antes(lista,a);
-    ls_insere_depois(lista,b);
-    ls_info(lista);
-    str juncao = ls_junta(lista,s_(", "));
-    s_imprime(juncao);
-    s_destroi(a);
-    s_destroi(b);
-    s_destroi(juncao);
-    ls_destroi(lista);
-}
