@@ -65,7 +65,7 @@ void ls_inicio(Lstr self){
     self->pos = -1;
 }
 
-void ls_fim(Lstr self){
+void ls_final(Lstr self){
     self->corrente = NULL;
     self->pos = self->tam;
 }
@@ -85,7 +85,7 @@ void ls_posiciona(Lstr self, int pos){
         return;
     }
     if(pos>=self->tam){
-        ls_fim(self);
+        ls_final(self);
         return;
     }
     int begin = (pos > (self->tam - pos))?1:0;
