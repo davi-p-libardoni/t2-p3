@@ -70,14 +70,6 @@ void ls_final(Lstr self){
     self->pos = self->tam;
 }
 
-static void pos_depois_fim(Lstr self){
-    // no *antTemp;
-    // self->pos = self->tam;
-    // self->corrente = NULL;
-    // self->corrente->prox = NULL;
-        
-}
-
 void ls_posiciona(Lstr self, int pos){
     if(pos<0) pos += self->tam;
     if(pos<0){
@@ -217,9 +209,7 @@ str ls_remove(Lstr self){
 Lstr ls_sublista(Lstr self, int tam){
     Lstr new = ls_cria();
     if(tam < 0 || self->pos >= self->tam) return new;
-    printf("passou 1\n");
     int fim = (self->tam > (self->pos + tam - 1))?self->pos + tam - 1:self->tam - 1;
-    printf("passou 2\n");
     for(int i = self->pos;i <= fim;i++,ls_avanca(self))
         ls_insere_depois(new,self->corrente->string);
     return new;
